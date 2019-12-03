@@ -1,0 +1,33 @@
+{
+    "name": "elestorm-uieditor",
+    "version": "2.1.4",
+    "description": "UIEditor Support for cocos2d-x",
+    "author": "Michael@elestrom.com",
+    "main": "main.js",
+    "main-menu": {
+        "i18n:MAIN_MENU.project.title/UIEditor/Setup Export Config": {
+            "message": "elestorm-uieditor:setup-export-config"
+        },
+        "i18n:MAIN_MENU.project.title/UIEditor/Build Now": {
+            "message": "elestorm-uieditor:build"
+        }
+    },
+    "panel": {
+        "main": "panels/setup-project-panel.js",
+        "type": "dockable",
+        "title": "Setup Export Config",
+        "width": 640,
+        "min-width": 320,
+        "height": 480,
+        "min-height": 330 
+    },
+    "profiles": {
+        "project": {
+            "setup": false,
+            "path": "",
+            "autoBuild": true,
+            "exportResourceOnly": true,
+            "exportResourceDynamicallyLoaded": true
+        }
+    }
+}
