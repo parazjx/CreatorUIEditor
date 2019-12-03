@@ -1,0 +1,7 @@
+{
+  "autoBuild": true,
+  "exportResourceDynamicallyLoaded": true,
+  "exportResourceOnly": true,
+  "path": "/Users/michael/Documents/project-ccc/UIEditor/UI-Export",
+  "setup": false
+}
