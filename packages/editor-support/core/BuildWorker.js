@@ -44,7 +44,7 @@ class BuildWorker extends WorkerBase {
 
     _convertFireToJson(uuidmap) {
         let fireFiles = this._getFireList();
-        let copyReourceInfos = parse_fire(fireFiles, 'creator', Constants.JSON_PATH, uuidmap);
+        let copyReourceInfos = parse_fire(fireFiles, Constants.RESOURCE_FOLDER_NAME, Constants.JSON_PATH, uuidmap);
 
         return copyReourceInfos;
     }
@@ -111,15 +111,15 @@ class BuildWorker extends WorkerBase {
             });
         }
 
-        let state = Editor.remote.Profile.load(plugin_profile, Constants.PROFILE_DEFAULTS);
-        if (state.data.exportResourceOnly)
-            return;
+        // let state = Editor.remote.Profile.load(plugin_profile, Constants.PROFILE_DEFAULTS);
+        // if (state.data.exportResourceOnly)
+        //     return;
 
         // copy reader
         // {
-            let codeFilesDist = Path.join(classes, 'reader')
-            Del.sync(codeFilesDist, {force: true});
-            Fs.copySync(Constants.READER_PATH, codeFilesDist);
+        //     let codeFilesDist = Path.join(classes, 'reader')
+        //     Del.sync(codeFilesDist, {force: true});
+        //     Fs.copySync(Constants.READER_PATH, codeFilesDist);
 
         //     // should exclude binding codes for c++ project
         //     if (!isLuaProject)
