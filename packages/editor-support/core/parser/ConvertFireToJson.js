@@ -63,7 +63,11 @@ class FireParser {
                 }
             }
 
-            sprite_frames.push(frame);
+            // single png, but not plist or pvr
+            if (frame.texturePath.endsWith(frame.name)) {
+                sprite_frames.push(frame);    
+            }
+            
         }
 
         this._json_output.spriteFrames = sprite_frames;
