@@ -37,6 +37,27 @@ class Label extends Node {
             this._properties.outline = outline_info;
         }
 
+        // shadow
+        let shadow_component = Node.get_node_component_of_type(this._node_data, 'cc.LabelShadow');
+        if (shadow_component) {
+            let color = shadow_component._color;
+            let offset = shadow_component._offset;
+            let shadow_info = {
+                color: {
+                    r: color.r,
+                    g: color.g,
+                    b: color.b,
+                    a: color.a
+                },
+                offset: {
+                    w: offset.x,
+                    h: offset.y
+                },
+                blur: shadow_component._blur
+            }
+            this._properties.shadow = shadow_info;
+        }
+
         // alignments
         this._properties.horizontalAlignment = Label.H_ALIGNMENTS[component._N$horizontalAlign];
         this._properties.verticalAlignment = Label.V_ALIGNMENTS[component._N$verticalAlign];

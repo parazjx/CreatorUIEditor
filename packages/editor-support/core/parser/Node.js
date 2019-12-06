@@ -198,7 +198,7 @@ class Node {
 
     parse_child(node_idx) {
         let node = state._json_data[node_idx];
-        if (node.__type__ === 'cc.Node') {
+        if (node.__type__ === 'cc.Node' && node._active === true) {
             let node_type = Node.guess_type(node);
             if (node_type != null) {
                 let n = Utils.create_node(node_type, node);

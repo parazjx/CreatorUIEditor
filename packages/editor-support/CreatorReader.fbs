@@ -133,6 +133,7 @@ table Label
     overflowType:LabelOverflowType;
     enableWrap:bool;
     outline:LabelOutline;
+    shadow:LabelShadow;
 }
 
 table RichText
@@ -582,6 +583,13 @@ table LabelOutline
 {
     color:ColorRGBA;
     width:float;
+}
+
+table LabelShadow
+{
+    color:ColorRGBA;
+    offset:Size;
+    blur:float;
 }
 
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
