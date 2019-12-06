@@ -26,17 +26,6 @@ class FireParser {
         // this.to_json_setup_collision_matrix();
     }
 
-    to_json_setup_design_resolution() {
-        if (this._state._design_resolution)
-            this._json_output.designResolution = {
-                w: this._state._design_resolution.width,
-                h: this._state._design_resolution.height
-            }
-
-        this._json_output.resolutionFitWidth = state._fit_width;
-        this._json_output.resolutionFitHeight = state._fit_height;
-    }
-
     to_json_setup_sprite_frames() {
         let sprite_frames = [];
 
@@ -73,15 +62,6 @@ class FireParser {
         this._json_output.spriteFrames = sprite_frames;
     }
 
-    to_json_setup_collision_matrix() {
-        let collisionMatrix = Editor.remote.Profile.load('profile://project/project.json').data['collision-matrix'];
-        this._json_output.collisionMatrix = [];
-        for (let i = 0, len = collisionMatrix.length; i < len; ++i) {
-            let collisionLine = {value: collisionMatrix[i]};
-            this._json_output.collisionMatrix.push(collisionLine);
-        }
-    }
-
     create_file(filename) {
         fire_fs.ensureDirSync(path.dirname(filename));
         return fs.openSync(filename, 'w');
@@ -90,53 +70,43 @@ class FireParser {
     convertSceneToNode (rtData) {
         if (rtData.children) {
             let canvas = rtData.children[0];
-            canvas.object.name = "root";
-            canvas.object.position.x = 0;
-            canvas.object.position.y = 0;
-            canvas.object.contentSize.w = 0;
-            canvas.object.contentSize.h = 0;
-            return canvas
-        } else {
-            return {
-                "object": {
-                    "contentSize": {
-                        "w": 0,
-                        "h": 0
-                    },
-                    "enabled": true,
-                    "name": "root",
-                    "anchorPoint": {
-                        "x": 0.5,
-                        "y": 0.5
-                    },
-                    "color": {
-                        "r": 255,
-                        "g": 255,
-                        "b": 255
-                    },
-                    "opacity": 255,
-                    "position": {
-                        "x": 480,
-                        "y": 320
-                    },
-                    "rotationSkewX": 0,
-                    "rotationSkewY": 0,
-                    "skewX": 0,
-                    "skewY": 0,
-                    "groupIndex": 0,
-                    "colliders": []
+            if (canvas.object) {
+                canvas.object.name = "root";
+                canvas.object.position.x = 0;
+                canvas.object.position.y = 0;
+                canvas.object.contentSize.w = 0;
+                canvas.object.contentSize.h = 0;
+                return canvas;
+            } 
+        }
+            
+        return {
+            "object": {
+                "enabled": true,
+                "name": "root",
+                "anchorPoint": {
+                    "x": 0.5,
+                    "y": 0.5
                 },
-                "object_type": "Node",
-                "children": []
-            }
+                "position": {
+                    "x": 0,
+                    "y": 0
+                },
+                "contentSize": {
+                    "w": 0,
+                    "h": 0
+                },
+            },
+            "object_type": "Node",
+            "children": []
         }
     }
 
     run(filename, assetpath, path_to_json_files) {
         state._filename = path.basename(filename, '.fire');
         let sub_folder = path.dirname(filename).substr(Constants.ASSETS_PATH.length + 1);
-        let json_name = path.join(path_to_json_files, sub_folder, state._filename) + '.json';
-        this._json_file = this.create_file(json_name);
+        let outpath = path.join(path_to_json_files, sub_folder);
+        
         state._assetpath = assetpath;
 
         state._json_data = JSON.parse(fs.readFileSync(filename));
@@ -151,13 +121,52 @@ class FireParser {
 
                 this.to_json_setup();
                 let jsonNode = scene_obj.to_json(0, 0);
-                this._json_output.root = this.convertSceneToNode(jsonNode);
-                let dump = JSON.stringify(this._json_output, null, '\t').replace(/\\\\/g,'/');
-                fs.writeSync(this._json_file, dump);
-                fs.close(this._json_file);
+                let rootNode = this.convertSceneToNode(jsonNode);
+
+                if (rootNode.children && rootNode.children.length > 0) {
+
+                    let rootjson = JSON.parse(JSON.stringify(this._json_output))
+
+                    rootNode.children.forEach(node => {
+
+                        if (node.object.name !== 'Main Camera') {
+
+                            Editor.success("Export Success:", node.object.name);
+
+                            let filename = path.join(outpath, node.object.name)+'.json';
+                            rootjson.root = node;
+                            this.writeNodeDataToJson(rootjson, filename);
+                        } else {
+                            if (rootNode.children.length === 1) {
+                                Editor.info("Cannot find any node in scene:", state._filename);
+                            }
+                        }
+                    });
+
+                } else {
+                    // let filename = path.join(outpath, state._filename)+'.json';
+                    // this._json_output.root = rootNode;
+                    // this.writeNodeDataToJson(this._json_output, filename);
+
+                    Editor.info("Cannot find any node in scene: ", state._filename);
+                }
+
+                // this._json_output.root = rootNode;
+                // let dump = JSON.stringify(this._json_output, null, '\t').replace(/\\\\/g,'/');
+                // fs.writeSync(this._json_file, dump);
+                // fs.close(this._json_file);
             }
         });
     }
+
+    writeNodeDataToJson (jsData, filename) {
+        let file = this.create_file(filename);
+        let dump = JSON.stringify(jsData, null, '\t').replace(/\\\\/g,'/');
+        fs.writeSync(file, dump);
+        fs.close(file);
+    }
+
+
 }
 
 function parse_fire(filenames, assetpath, path_to_json_files, uuidmaps) {

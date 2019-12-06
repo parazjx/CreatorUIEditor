@@ -52,6 +52,9 @@ class BuildWorker extends WorkerBase {
     // .json -> .ccreator
     _compileJsonToBinary(cb) {
         const jsonFiles = this._getJsonList();
+        if (jsonFiles.length == 0) {
+            return cb();
+        }
 
         let i = 0;
         jsonFiles.forEach(function(file) {
