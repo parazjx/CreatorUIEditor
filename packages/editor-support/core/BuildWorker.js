@@ -29,22 +29,27 @@ class BuildWorker extends WorkerBase {
         Fs.emptyDirSync(Constants.JSON_PATH);
         Fs.emptyDirSync(Constants.CCREATOR_PATH);
 
-        Utils.getAssetsInfo(function(uuidmap) {
-            let copyReourceInfos = this._convertFireToJson(uuidmap);
-            let dynamicLoadRes = this._getDynamicLoadRes(uuidmap);
-            Object.assign(copyReourceInfos, dynamicLoadRes);
-            this._compileJsonToBinary(function() {
-                this._copyResources(copyReourceInfos);
-                Editor.Ipc.sendToAll('elestorm-uieditor:state-changed', 'finish', 100);
-                this._callback();
-                Utils.log('[UIEditor] build end');
+        Editor.Ipc.sendToPanel('scene', 'scene:query-hierarchy', (error, sceneID, hierarchy) => {
+            if (error){return Editor.error(error);}
+
+            Utils.getAssetsInfo(function(uuidmap) {
+                let copyReourceInfos = this._convertFireToJson(uuidmap, sceneID);
+                let dynamicLoadRes = this._getDynamicLoadRes(uuidmap);
+                Object.assign(copyReourceInfos, dynamicLoadRes);
+                this._compileJsonToBinary(function() {
+                    this._copyResources(copyReourceInfos);
+                    Editor.Ipc.sendToAll('elestorm-uieditor:state-changed', 'finish', 100);
+                    this._callback();
+                    Utils.log('[UIEditor] build end');
+                }.bind(this));
             }.bind(this));
-        }.bind(this));
+
+        });        
     }
 
-    _convertFireToJson(uuidmap) {
+    _convertFireToJson(uuidmap, sceneID) {
         let fireFiles = this._getFireList();
-        let copyReourceInfos = parse_fire(fireFiles, Constants.RESOURCE_FOLDER_NAME, Constants.JSON_PATH, uuidmap);
+        let copyReourceInfos = parse_fire(sceneID, fireFiles, Constants.RESOURCE_FOLDER_NAME, Constants.JSON_PATH, uuidmap);
 
         return copyReourceInfos;
     }
