@@ -102,7 +102,7 @@ class FireParser {
         }
     }
 
-    run(filename, assetpath, path_to_json_files) {
+    run(sceneID, filename, assetpath, path_to_json_files) {
         state._filename = path.basename(filename, '.fire');
         let sub_folder = path.dirname(filename).substr(Constants.ASSETS_PATH.length + 1);
         let outpath = path.join(path_to_json_files, sub_folder);
@@ -115,46 +115,47 @@ class FireParser {
             if (obj.__type__ === 'cc.SceneAsset') {
                 let scene = obj.scene;
                 let scene_idx = scene.__id__;
-                let scene_obj = new Scene(state._json_data[scene_idx]);
+                let scene_dat = state._json_data[scene_idx];
 
-                scene_obj.parse_properties();
+                if (sceneID === scene_dat._id) {
 
-                this.to_json_setup();
-                let jsonNode = scene_obj.to_json(0, 0);
-                let rootNode = this.convertSceneToNode(jsonNode);
+                    let scene_obj = new Scene(scene_dat);
+                    scene_obj.parse_properties();
 
-                if (rootNode.children && rootNode.children.length > 0) {
+                    this.to_json_setup();
+                    let jsonNode = scene_obj.to_json(0, 0);
+                    let rootNode = this.convertSceneToNode(jsonNode);
 
-                    let rootjson = JSON.parse(JSON.stringify(this._json_output))
+                    if (rootNode.children && rootNode.children.length > 0) {
 
-                    rootNode.children.forEach(node => {
+                        let rootjson = JSON.parse(JSON.stringify(this._json_output))
 
-                        if (node.object.name !== 'Main Camera') {
-
-                            Editor.success("Export Success:", node.object.name);
-
-                            let filename = path.join(outpath, node.object.name)+'.json';
-                            rootjson.root = node;
-                            this.writeNodeDataToJson(rootjson, filename);
-                        } else {
-                            if (rootNode.children.length === 1) {
-                                Editor.info("Cannot find any node in scene:", state._filename);
+                        for (var i = 0; i < rootNode.children.length; i++) {
+                            let node = rootNode.children[i];
+                            
+                            if (node.object_type !== "Node") {
+                                Editor.error("Only Support Node! Hang up " + node.object.node.name + " to a parent node!");
+                                continue;
                             }
-                        }
-                    });
 
-                } else {
-                    // let filename = path.join(outpath, state._filename)+'.json';
-                    // this._json_output.root = rootNode;
-                    // this.writeNodeDataToJson(this._json_output, filename);
+                            if (node.object.name !== 'Main Camera') {
 
-                    Editor.info("Cannot find any node in scene: ", state._filename);
+                                Editor.success("Export Success:", node.object.name);
+
+                                let filename = path.join(outpath, node.object.name)+'.json';
+                                rootjson.root = node;
+                                this.writeNodeDataToJson(rootjson, filename);
+                            } else {
+                                if (rootNode.children.length === 1) {
+                                    Editor.info("Cannot find any node in scene:", state._filename);
+                                }
+                            }
+                        };
+
+                    } else {
+                        Editor.info("Cannot find any node in scene: ", state._filename);
+                    }
                 }
-
-                // this._json_output.root = rootNode;
-                // let dump = JSON.stringify(this._json_output, null, '\t').replace(/\\\\/g,'/');
-                // fs.writeSync(this._json_file, dump);
-                // fs.close(this._json_file);
             }
         });
     }
@@ -169,7 +170,7 @@ class FireParser {
 
 }
 
-function parse_fire(filenames, assetpath, path_to_json_files, uuidmaps) {
+function parse_fire(sceneID, filenames, assetpath, path_to_json_files, uuidmaps) {
     if (assetpath[-1] != '/')
         assetpath += '/';
 
@@ -179,7 +180,7 @@ function parse_fire(filenames, assetpath, path_to_json_files, uuidmaps) {
     filenames.forEach(function(filename) {
         state.reset();
         let parser = new FireParser();
-        parser.run(filename, assetpath, path_to_json_files)
+        parser.run(sceneID, filename, assetpath, path_to_json_files)
         for(let key in state._uuid) {
             if (state._uuid.hasOwnProperty(key))
                 uuid[key] = state._uuid[key];
